@@ -1,9 +1,8 @@
 // app/posts/[slug]/page.tsx
-
 import { getPostData, getAllPostSlugs } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 
-type PostPageProps = {
+type Props = {
   params: {
     slug: string;
   };
@@ -11,25 +10,21 @@ type PostPageProps = {
 
 export async function generateStaticParams() {
   const slugs = getAllPostSlugs();
-
-  return slugs.map((slugObj) => ({
-    slug: slugObj.params.slug, // string만 반환하도록 수정
-  }));
+  return slugs.map((slug) => ({ slug }));
 }
 
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
-
-  if (typeof slug !== 'string') return notFound();
-
+export default async function PostPage({ params }: Props) {
+  const { slug } = params;
   const postData = await getPostData(slug);
 
-  if (!postData) return notFound();
+  if (!postData) {
+    notFound();
+  }
 
   return (
     <article>
       <h1>{postData.title}</h1>
+      <p>{postData.date}</p>
       <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
     </article>
   );
